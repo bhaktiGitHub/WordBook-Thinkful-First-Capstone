@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>First Capstone</title>
+
+  <!-- Responsive viewport tag, tells small screens that it's responsive -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Stylesheets -->
+  <link href="https://fonts.googleapis.com/css?family=Noto+Sans" rel="stylesheet">
+  <link rel="stylesheet" href="float-grid.css" />
+  <link rel="stylesheet" href="main.css" />
+  <link href="https://fonts.googleapis.com/css?family=Lobster" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="menu">
+    <h1> WordBook </h1>
+  </nav>
+  <main role="main">
+    <div class="searchDiv">
+      <input class="searchTerm" type="textbox" name="query" placeholder="Lookup any word or phrase ..">
+      <button class="searchBtn">Search</button>
+   <div>
+  <div class="intro">
+    My Application is a  online source for English  pronunciation , definitions, synonyms,antonyms ,example sentences .
+    Application also gives wiki-page links , images and youtube videos for the word .
+
+
+  </div>
+  <div class="results">
+    <div class="row">
+      <div class="col-6">
+        <h1 class="title">DEFINITIONS</h1>
+        <div class="box definitions"> <ul></ul> </div>
+      </div>
+      <div class="col-3">
+        <h1 class="title">SYNONYMS</h1>
+        <div class="box synonyms"><ul></ul></div>
+      </div>
+      <div class="col-3">
+        <h1 class="title">ANTONYMS</h1>
+        <div class="box antonyms"><ul></ul></div>
+      </div>
+      <!-- <div class="col-3">
+        <h1>Related Words</h1>
+        <div class="box relatedWords"> </div>
+      </div> -->
+    </div>
+
+    <div class="row">
+      <div class="col-6">
+        <h1 class="title">EXAMPLES</h1>
+        <div class="box examples"> <ul></ul></div>
+      </div>
+      <div class="col-6">
+        <h1 class="title">WIKI-INFO</h1>
+        <div class="box wiki"></div>
+      </div>
+      
+    </div>
+    <div class="row">
+      <div class="col-6">
+        <h1 class="title">IMAGE GALLERY</h1>
+        <div class="box images"> </div>
+      </div>
+      <div class="col-6">
+        <h1 class="title">VIDEO</h1>
+        <div class="box videos"></div>
+      </div>
+      
+    </div>
+  </div>
+
+
+  </main>
+
+  <footer>
+    <div class="col-12">
+        <div class="box appFooter">© 2018 WordBook, LLC. </div>
+      </div>
+  </footer>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script>
+ $('.searchBtn').click(function()
+ {
+
+  $('.intro').hide();
+  $('.results').fadeIn();
+  $('.definitions').html('<ul></ul>')
+  $('.synonyms').html('<ul></ul>')
+  $('.antonyms').html('<ul></ul>')
+  $('.examples').html('<ul></ul>')
+  $('.wiki').html(' ')
+  $('.images').html(' ')
+  $('.videos').html(' ')
+
+  var searchTerm = $('.searchTerm').val().toLowerCase().trim();
+  
+  //pronountiation
+
+      $.ajax({ 
+        url:'http://api.wordnik.com:80/v4/word.json/'+searchTerm+'/pronunciations?useCanonical=false&typeFormat=ahd&limit=50&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5' ,
+        data: 'query', 
+        dataType: 'json',
+        type: 'GET', 
+        success: function (data) { console.log(data); 
+            $.each(data,function(key,value){
+              console.log(value.raw);
+              $('div.definitions').prepend("<h4>"+searchTerm+" :"+value.raw+"</h4><h2>Definitions:</h2>");
+
+            })
+        }
+      })
+  //definitions
+  
+      $.ajax({ 
+        url:'http://api.wordnik.com:80/v4/word.json/'+searchTerm+'/definitions?limit=200&includeRelated=true&useCanonical=false&includeTags=false&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5' ,
+        data: 'query', 
+        dataType: 'json',
+        type: 'GET', 
+        success: function (data) { console.log(data);
+
+          if(data.length < 1)
+          {
+                $('div.definitions').append("The word you've entered isn't in the WordBook");
+          }
+          else
+          {
+
+            $.each(data,function(key,value){
+              $('div.definitions ul').append("<li>"+value.text+"</li>");
+            })
+          }
+        }
+      })
+ 
+//Synonyms
+ $.ajax({ 
+        url:'http://api.wordnik.com:80/v4/word.json/'+searchTerm+'/relatedWords?useCanonical=false&relationshipTypes=synonym&limitPerRelationshipType=10&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5' ,
+        data: 'query', 
+        dataType: 'json',
+        type: 'GET', 
+        success: function (data) { console.log(data); 
+          if(data.length < 1)
+          {
+                $('div.synonyms').append("The word you've entered isn't in the WordBook");
+          }
+          else
+          {
+            $.each(data[0].words,function(key,value){
+              $('div.synonyms').append("<li>"+value+"</li>");
+
+            })
+          }
+        }
+      })
+
+      // Antonyms 
+
+      $.ajax({ 
+        url:'http://api.wordnik.com:80/v4/word.json/'+searchTerm+'/relatedWords?useCanonical=false&relationshipTypes=antonym&limitPerRelationshipType=10&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5' ,
+        data: 'query', 
+        dataType: 'json',
+        type: 'GET', 
+        success: function (data) { console.log(data); 
+          console.log(data.length);
+          if(data.length < 1)
+          {
+                $('div.antonyms').append("The word you've entered isn't in the WordBook");
+          }
+          else
+          {
+            $.each(data[0].words,function(key,value){
+              $('div.antonyms ul').append("<li>"+value+"</li>")
+            })
+          }
+        }
+      })
+      
+      // top Examples
+      $.ajax({ 
+        url:'http://api.wordnik.com:80/v4/word.json/'+searchTerm+'/topExample?useCanonical=false&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5' ,
+        data: 'query', 
+        dataType: 'json',
+        type: 'GET', 
+        success: function (data) { console.log(data); 
+        console.log(data.text);
+        $('div.examples ul').append("<li>"+data.text+"</li>")
+            
+        }
+      })
+           
+      //examples
+            $.ajax({ 
+        url:'http://api.wordnik.com:80/v4/word.json/'+searchTerm+'/examples?includeDuplicates=false&useCanonical=false&skip=0&limit=1&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5' ,
+        data: 'query', 
+        dataType: 'json',
+        type: 'GET', 
+        success: function (data) { console.log(data); 
+            $.each(data.examples,function(key,value){
+              $('div.examples ul').append("<li>"+value.text+"</li>")
+
+            })
+        }
+      })
+      
+      //images
+      $.ajax({ 
+        url:"https://api.flickr.com/services/feeds/photos_public.gne?tags="+searchTerm+"&api_key=d8fb2ac68bd3e33da206c1afe65c2acd&format=json&jsoncallback=?",
+       data: 'query', 
+       dataType: 'jsonp',
+       type: 'GET', 
+       success: function (data) { console.log(data); //do something with data }});
+       $.each(data.items,function(key,value){
+       $('div.images').append("<img src='"+value.media.m+"'>")
+       })
+      }
+    })
+      // WIKI-PAGE
+
+      $.ajax({ 
+        url:"https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch="+searchTerm+"&utf8=",
+       data: 'query', 
+       dataType: 'jsonp',
+       type: 'GET', 
+       success: function (data) { console.log(data); 
+       console.log(data.query.search);
+       $.each(data.query.search,function(key,value){
+       console.log(value);
+       $('div.wiki').append("<div><a href='https://en.wikipedia.org/w/index.php?curid="+value.pageid+"' target='_blank'><h1>"+value.title+"</h1></a>"+value.snippet+"<hr></div>")
+       })
+      }
+    })
+
+      //youtube
+
+      $.ajax({
+        url:"https://www.googleapis.com/youtube/v3/search",
+        data : {
+        part: 'snippet',
+        key: 'AIzaSyAHrofdI7wqp3cqiMNxRmpK50iDrtoCfgo',
+        q: searchTerm,
+        maxResults:10
+    },
+    
+       dataType: 'jsonp',
+       type: 'GET', 
+       success: function (data) { console.log(data); 
+       $.each(data.items,function(key,value)
+       {
+        $('div.videos').append("<a href='https://www.youtube.com/watch?v="+value.id.videoId+"' target='_blank'><img src='"+value.snippet.thumbnails.default.url+"'></a>")
+               })
+      }
+    })
+    
+
+})
+</script>
+</body>
+</html>
+
+
+
+
+
